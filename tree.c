@@ -11,16 +11,27 @@ int serial = 0;
 
 // Print string without escape chacters
 char *escape(char *s) {
-    char *s2 = malloc(strlen(s)+4);
-    if (s[0] == '\"') {
-        if (s[strlen(s)-1] != '\"') {
-            fprintf(stderr, "What is it?!\n");
-        }
-        sprintf(s2, "\\%s", s);
-        strcat(s2+strlen(s2)-1, "\\\"");
-        return s2;
+    size_t len = strlen(s);
+    
+    char *s2 = malloc(2 * len + 1);
+    if (!s2) {
+        perror("malloc failed");
+        return NULL;
     }
-    else return s;
+
+    char *p = s2;
+    for (size_t i = 0; i < len; i++) {
+        switch (s[i]) {
+            case '\"': *p++ = '\\'; *p++ = '\"'; break;
+            case '\\': *p++ = '\\'; *p++ = '\\'; break;
+            case '\n': *p++ = '\\'; *p++ = 'n'; break;
+            case '\t': *p++ = '\\'; *p++ = 't'; break;
+            default:   *p++ = s[i]; break;
+        }
+    }
+    
+    *p = '\0';
+    return s2;
 }
 
 // Print name of symbole or leaf text
@@ -71,15 +82,16 @@ void print_graph2(tree *t, FILE *f) {
             fprintf(f, "N%d -> N%d%d;\n", t->prodrule, t->prodrule, serial);
             fprintf(f, "N%d%d [label=\"%s\"];\n", t->prodrule, serial, "Empty rule");
             serial++;
+            fprintf(stderr, "INCREMENT %d\n", serial);
         }
     }
 }
 
 // Print dot file
 void printDot(tree *t){
-    char *dot_filename = malloc(strlen(filename) + strlen(".java.dot") + 1);
+    char *dot_filename = malloc(strlen(filename) + strlen(".dot") + 1);
     strcpy(dot_filename, filename);
-    strcat(dot_filename, ".java.dot");
+    strcat(dot_filename, ".dot");
     FILE *dot_file = fopen(dot_filename, "w");
     if (!dot_file) {
         perror("\033[0;31m[Error]\033[0m Unable to open dot file");
@@ -103,7 +115,7 @@ tree *linkTree(const char *name, int n, ...) {
     if (t == NULL)
         exit(EXIT_FAILURE);
     insertTreeArray(&trees, t);
-    t->prodrule = id;
+    t->prodrule = id++;
     t->symbolname = strdup(name); 
     t->nkids = n;
     t->leaf = NULL;

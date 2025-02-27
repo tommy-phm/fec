@@ -12,8 +12,8 @@
 char DOT = 0;
 char TREE = 0;
 char SYMTAB = 0;
-char CODE = 0;
-char OBJECT = 0;
+char ASM = 0;
+char COMP = 0;
 
 extern int yylex(), yyparse(), yylex_destroy();
 void yyerror(const char *s);
@@ -35,13 +35,13 @@ int main(int argc, char *argv[]) {
             TREE = 1;
         else if (strcmp(argv[i], "-symtab") == 0)
             SYMTAB = 1;
-        else if (strcmp(argv[i], "-code") == 0)
-            CODE = 1;  
-        else if (strcmp(argv[i], "-c") == 0)
-            OBJECT = 1;
+        else if (strcmp(argv[i], "-asm") == 0)
+            ASM = 1;  
+        else if (strcmp(argv[i], "-comp") == 0)
+            COMP = 1;
         else {
             if (strncmp(argv[i], "-", 1) == 0){
-                fprintf(stderr, "\033[0;31m[Error]\033[0m Argument \"%s\" is invalid. \nUsage: %s [-dot] [-tree] [-symtab] <input_file>\n", argv[i], argv[0]);
+                fprintf(stderr, "\033[0;31m[Error]\033[0m Argument \"%s\" is invalid. \nUsage: %s [-dot] [-tree] [-symtab] [-asm] [-comp] <input_file>\n", argv[i], argv[0]);
                 return 1;
             }
             filename = argv[i];
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
             if (tmp != NULL) 
                 filename = tmp + 1;            
             if (!file) {
-                fprintf(stderr, "\033[0;31m[Error]\033[0m File \"%s\" can't be found. \nUsage: %s [-dot] [-tree] [-symtab] [-c] <input_file>\n", argv[i], argv[0]);
+                fprintf(stderr, "\033[0;31m[Error]\033[0m File \"%s\" can't be found. \nUsage: %s [-dot] [-tree] [-symtab] [-asm] [-comp] <input_file>\n", argv[i], argv[0]);
                 return 1;
             }
             printf("\033[0;32m[FEC]\033[0m Processing File: %s\n\n", filename);
@@ -82,7 +82,13 @@ int main(int argc, char *argv[]) {
             }
 
             initCode(crate);
-            printCode(crate);
+
+            if(ASM){
+                printf("\033[0;34m[Symbol Table (Assembly Code)]\033[0m\n");
+                printCode(crate);
+                printf("\n");
+            }
+
             writeCode(crate);
         
             freeTokenArray(&tokens);
@@ -91,7 +97,8 @@ int main(int argc, char *argv[]) {
             freeAddrArray(&addrs);
             freeInstrArray(&instrs);
             freeLit();
-            if(OBJECT){
+
+            if(COMP){
                 char *filename = extractFileName();
                 char compile_command[100];
                 sprintf(compile_command, "gcc -c %s.c -o %s.o", filename, filename);
