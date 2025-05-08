@@ -1,7 +1,7 @@
 # FeC  
 A transpiler that translates Rust code into C code. It supports a small subset of Rust. The name "FeC" stands for "Fe Compiler," with "Fe" being a reference to the Rust programming language.
 
-![Ferris the crab](images/rustacean.png)  
+![Ferris the crab](images/rustacean.gif)  
 
 ## Supported Features  
 ### Data Types  
